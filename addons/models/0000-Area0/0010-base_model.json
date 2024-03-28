@@ -616,7 +616,7 @@
       ],
       "description": "Model to store auth service in Atlas",
       "serviceType": "atlan",
-      "typeVersion": "1.2",
+      "typeVersion": "1.1",
       "attributeDefs": [
         {
           "name": "authServiceType",
@@ -631,17 +631,6 @@
         },
         {
           "name": "tagService",
-          "typeName": "string",
-          "indexType": "STRING",
-          "cardinality": "SINGLE",
-          "isIndexable": false,
-          "isOptional": true,
-          "isUnique": false,
-          "skipScrubbing": true,
-          "includeInNotification": true
-        },
-        {
-          "name": "abacService",
           "typeName": "string",
           "indexType": "STRING",
           "cardinality": "SINGLE",
@@ -692,19 +681,9 @@
         "Asset"
       ],
       "serviceType": "atlan",
-      "typeVersion": "1.2",
+      "typeVersion": "1.1",
       "attributeDefs":
       [
-        {
-          "name": "policyFilterCriteria",
-          "typeName": "string",
-          "cardinality": "SINGLE",
-          "isIndexable": false,
-          "isOptional": true,
-          "isUnique": false,
-          "skipScrubbing": true,
-          "includeInNotification": true
-        },
         {
           "name": "policyType",
           "typeName": "AuthPolicyType",

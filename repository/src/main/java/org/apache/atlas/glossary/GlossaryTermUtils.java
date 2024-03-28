@@ -18,7 +18,6 @@
 package org.apache.atlas.glossary;
 
 import org.apache.atlas.AtlasErrorCode;
-import org.apache.atlas.RequestContext;
 import org.apache.atlas.bulkimport.BulkImportResponse;
 import org.apache.atlas.bulkimport.BulkImportResponse.ImportInfo;
 import org.apache.atlas.exception.AtlasBaseException;
@@ -38,8 +37,6 @@ import org.apache.atlas.repository.store.graph.v2.AtlasGraphUtilsV2;
 import org.apache.atlas.type.AtlasRelationshipType;
 import org.apache.atlas.type.AtlasTypeRegistry;
 import org.apache.atlas.util.FileUtils;
-import org.apache.atlas.utils.AtlasPerfMetrics;
-import org.apache.atlas.utils.AtlasPerfTracer;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.ArrayUtils;
@@ -71,8 +68,6 @@ public class GlossaryTermUtils extends GlossaryUtils {
     private static final Logger  LOG           = LoggerFactory.getLogger(GlossaryTermUtils.class);
     private static final boolean DEBUG_ENABLED = LOG.isDebugEnabled();
 
-    private static final Logger PERF_LOG = AtlasPerfTracer.getPerfLogger("utils.GlossaryTermUtils");
-
     private static final int INDEX_FOR_GLOSSARY_AT_RECORD = 0;
     private static final int INDEX_FOR_TERM_AT_RECORD     = 1;
 
@@ -103,31 +98,20 @@ public class GlossaryTermUtils extends GlossaryUtils {
             LOG.debug("==> GlossaryTermUtils.processTermAssignments({}, {})", glossaryTerm, relatedObjectIds);
         }
 
-        AtlasPerfMetrics.MetricRecorder metric = RequestContext.get().startMetricRecord("processTermAssignments");
-        AtlasPerfTracer perf = null;
-
-        if (AtlasPerfTracer.isPerfTraceEnabled(PERF_LOG)) {
-            perf = AtlasPerfTracer.getPerfTracer(PERF_LOG, "processTermAssignments");
-        }
-
         Objects.requireNonNull(glossaryTerm);
 
-        // Set<AtlasRelatedObjectId> assignedEntities = glossaryTerm.getAssignedEntities();
+        Set<AtlasRelatedObjectId> assignedEntities = glossaryTerm.getAssignedEntities();
         for (AtlasRelatedObjectId objectId : relatedObjectIds) {
-            /***
-             *  Discuss with @Aayush :PLT-305
-             */
-//            if (CollectionUtils.isNotEmpty(assignedEntities) && assignedEntities.contains(objectId)) {
-//                if (DEBUG_ENABLED) {
-//                    LOG.debug("Skipping already assigned entity {}", objectId);
-//                }
-//                continue;
-//            }
+            if (CollectionUtils.isNotEmpty(assignedEntities) && assignedEntities.contains(objectId)) {
+                if (DEBUG_ENABLED) {
+                    LOG.debug("Skipping already assigned entity {}", objectId);
+                }
+                continue;
+            }
 
             if (DEBUG_ENABLED) {
                 LOG.debug("Assigning term guid={}, to entity guid = {}", glossaryTerm.getGuid(), objectId.getGuid());
             }
-
             createRelationship(defineTermAssignment(glossaryTerm.getGuid(), objectId));
 
             AtlasVertex vertex = getVertexById(objectId.getGuid());
@@ -139,8 +123,6 @@ public class GlossaryTermUtils extends GlossaryUtils {
         if (DEBUG_ENABLED) {
             LOG.debug("<== GlossaryTermUtils.processTermAssignments()");
         }
-        RequestContext.get().endMetricRecord(metric);
-        AtlasPerfTracer.log(perf);
     }
 
     public void processTermDissociation(AtlasGlossaryTerm glossaryTerm, Collection<AtlasRelatedObjectId> relatedObjectIds) throws AtlasBaseException {

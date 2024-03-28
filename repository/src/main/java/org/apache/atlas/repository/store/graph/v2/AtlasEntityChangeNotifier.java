@@ -171,7 +171,6 @@ public class AtlasEntityChangeNotifier implements IAtlasEntityChangeNotifier {
         }
     }
 
-
     @Override
     public void onClassificationsAddedToEntities(List<AtlasEntity> entities, List<AtlasClassification> addedClassifications, boolean forceInline) throws AtlasBaseException {
         if (isV2EntityNotificationEnabled) {

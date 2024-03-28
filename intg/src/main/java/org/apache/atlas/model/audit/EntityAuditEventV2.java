@@ -133,12 +133,8 @@ public class EntityAuditEventV2 implements Serializable, Clearable {
     private AtlasEntity         entity;
     private EntityAuditType     type;
     private Map<String, Object> detail;
-
     private AtlasEntityHeader   entityDetail;
     private Map<String, String> headers;
-    private List<Map<String,Object>> classificationDetails;
-    @JsonSerialize(include=JsonSerialize.Inclusion.NON_NULL)
-    private String classificationDetail;
 
     public EntityAuditEventV2() { }
 
@@ -294,13 +290,12 @@ public class EntityAuditEventV2 implements Serializable, Clearable {
                Objects.equals(created, that.created) &&
                Objects.equals(typeName, that.typeName) &&
                Objects.equals(entityQualifiedName, that.entityQualifiedName) &&
-                Objects.equals(headers, that.headers) &&
-                Objects.equals(classificationDetails, that.classificationDetails);
+               Objects.equals(headers, that.headers);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(entityId, timestamp, user, action, details, eventKey, entity, type, detail, created, entityQualifiedName, typeName, headers, classificationDetails);
+        return Objects.hash(entityId, timestamp, user, action, details, eventKey, entity, type, detail, created, entityQualifiedName, typeName, headers);
     }
 
     @Override
@@ -320,7 +315,6 @@ public class EntityAuditEventV2 implements Serializable, Clearable {
         sb.append(", detail=").append(detail);
         sb.append(", created=").append(created);
         sb.append(", headers=").append(headers);
-        sb.append(", classificationDetails").append(classificationDetails);
         sb.append('}');
 
         return sb.toString();
@@ -352,7 +346,6 @@ public class EntityAuditEventV2 implements Serializable, Clearable {
         detail = null;
         created = 0L;
         headers = null;
-        classificationDetails = null;
     }
 
     private String getJsonPartFromDetails() {
@@ -362,7 +355,7 @@ public class EntityAuditEventV2 implements Serializable, Clearable {
             if(bracketStartPosition != -1) {
                 ret = details.substring(bracketStartPosition);
             }
-        } else if(!detail.isEmpty()) {
+        } else if(MapUtils.isNotEmpty(detail)) {
             ret = AtlasType.toJson(detail);
         }
 
@@ -421,21 +414,5 @@ public class EntityAuditEventV2 implements Serializable, Clearable {
         }
 
         events.sort(sortOrderDesc ? comparator.reversed() : comparator);
-    }
-
-    public List<Map<String, Object>> getClassificationDetails() {
-        return classificationDetails;
-    }
-
-    public void setClassificationDetails(List<Map<String, Object>> classificationDetails) {
-        this.classificationDetails = classificationDetails;
-    }
-
-    public String getClassificationDetail() {
-        return classificationDetail;
-    }
-
-    public void setClassificationDetail(String classificationDetail) {
-        this.classificationDetail = classificationDetail;
     }
 }

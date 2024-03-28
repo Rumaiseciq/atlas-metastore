@@ -78,8 +78,6 @@ public class SolrIndexHelper implements IndexChangeListener {
             return;
         }
 
-        LOG.info("SolrIndexHelper:initializationCompleted: {}", initializationCompleted);
-
         if(initializationCompleted) {
             try {
                 AtlasGraph            graph                          = AtlasGraphProvider.getGraphInstance();

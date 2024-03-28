@@ -19,8 +19,6 @@
 
 package org.apache.atlas.plugin.service;
 
-import org.apache.atlas.authorizer.store.PoliciesStore;
-import org.apache.atlas.authorizer.store.UsersStore;
 import org.apache.atlas.type.AtlasTypeRegistry;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
@@ -178,7 +176,6 @@ public class RangerBasePlugin {
 
 	public void setRoles(RangerRoles roles) {
 		this.roles = roles;
-		UsersStore.getInstance().setAllRoles(roles);
 
 		RangerPolicyEngine policyEngine = this.policyEngine;
 
@@ -195,7 +192,6 @@ public class RangerBasePlugin {
 
 	public void setUserStore(RangerUserStore userStore) {
 		this.userStore = userStore;
-		UsersStore.getInstance().setUserStore(userStore);
 
 		// RangerPolicyEngine policyEngine = this.policyEngine;
 
@@ -298,16 +294,6 @@ public class RangerBasePlugin {
 	public void setPolicies(ServicePolicies policies) {
 		if (LOG.isDebugEnabled()) {
 			LOG.debug("==> setPolicies(" + policies + ")");
-		}
-
-		if (policies != null) {
-			List<RangerPolicy> resourcePolicies = policies.getPolicies();
-			List<RangerPolicy> tagPolicies = policies.getTagPolicies().getPolicies();
-			List<RangerPolicy> abacPolicies = policies.getAbacPolicies().getPolicies();
-
-			PoliciesStore.getInstance().setResourcePolicies(resourcePolicies);
-			PoliciesStore.getInstance().setTagPolicies(tagPolicies);
-			PoliciesStore.getInstance().setAbacPolicies(abacPolicies);
 		}
 
 		// guard against catastrophic failure during policy engine Initialization or
@@ -475,47 +461,38 @@ public class RangerBasePlugin {
 	}
 
 	public RangerAccessResult isAccessAllowed(RangerAccessRequest request) {
-		return isAccessAllowed(request, resultProcessor, "");
+		return isAccessAllowed(request, resultProcessor);
 	}
 
 	public Collection<RangerAccessResult> isAccessAllowed(Collection<RangerAccessRequest> requests) {
 		return isAccessAllowed(requests, resultProcessor);
 	}
 
-	public RangerAccessResult isAccessAllowed(RangerAccessRequest request, RangerAccessResultProcessor resultProcessor, String uuid) {
-
+	public RangerAccessResult isAccessAllowed(RangerAccessRequest request, RangerAccessResultProcessor resultProcessor) {
 		RangerAccessResult ret          = null;
 		RangerPolicyEngine policyEngine = this.policyEngine;
 
 		if (policyEngine != null) {
-			long startTime = System.currentTimeMillis();
-			ret = policyEngine.evaluatePolicies(request, RangerPolicy.POLICY_TYPE_ACCESS, null, uuid);
-			LOG.info("policyEngine.evaluatePolicies ended in "+(System.currentTimeMillis() - startTime)+ " uuid: " + uuid);
+			ret = policyEngine.evaluatePolicies(request, RangerPolicy.POLICY_TYPE_ACCESS, null);
 		}
 
 		if (ret != null) {
 			for (RangerChainedPlugin chainedPlugin : chainedPlugins) {
-				long startTime = System.currentTimeMillis();
 				RangerAccessResult chainedResult = chainedPlugin.isAccessAllowed(request);
-				LOG.info("chainedPlugin.isAccessAllowed ended in " + (System.currentTimeMillis() - startTime) + "uuid: " + uuid);
+
 				if (chainedResult != null) {
 					updateResultFromChainedResult(ret, chainedResult);
 				}
-				LOG.info("chainedPlugin.isAccessAllowed : " + chainedPlugin.getClass().getName() + " ended in " + (System.currentTimeMillis() - startTime) + " uuid: "+ uuid);
 			}
 
 		}
 
 		if (policyEngine != null) {
-			long startTime = System.currentTimeMillis();
 			policyEngine.evaluateAuditPolicies(ret);
-			LOG.info("policyEngine.evaluateAuditPolicies ended in " + (System.currentTimeMillis()-startTime) + "uuid: " + uuid);
 		}
 
 		if (resultProcessor != null) {
-			long startTime = System.currentTimeMillis();
 			resultProcessor.processResult(ret);
-			LOG.info("resultProcessor.processResult ended in " + (System.currentTimeMillis()-startTime) + "uuid: " + uuid);
 		}
 
 		return ret;
@@ -567,7 +544,7 @@ public class RangerBasePlugin {
 		RangerPolicyEngine policyEngine = this.policyEngine;
 
 		if (policyEngine != null) {
-			ret = policyEngine.evaluatePolicies(request, RangerPolicy.POLICY_TYPE_ACCESS, null, "");
+			ret = policyEngine.evaluatePolicies(request, RangerPolicy.POLICY_TYPE_ACCESS, null);
 		}
 
 		return ret;
@@ -578,7 +555,7 @@ public class RangerBasePlugin {
 		RangerAccessResult ret          = null;
 
 		if(policyEngine != null) {
-			ret = policyEngine.evaluatePolicies(request, RangerPolicy.POLICY_TYPE_DATAMASK, resultProcessor, "");
+			ret = policyEngine.evaluatePolicies(request, RangerPolicy.POLICY_TYPE_DATAMASK, resultProcessor);
 
 			policyEngine.evaluateAuditPolicies(ret);
 		}
@@ -591,7 +568,7 @@ public class RangerBasePlugin {
 		RangerAccessResult ret          = null;
 
 		if(policyEngine != null) {
-			ret = policyEngine.evaluatePolicies(request, RangerPolicy.POLICY_TYPE_ROWFILTER, resultProcessor, "");
+			ret = policyEngine.evaluatePolicies(request, RangerPolicy.POLICY_TYPE_ROWFILTER, resultProcessor);
 
 			policyEngine.evaluateAuditPolicies(ret);
 		}
@@ -971,7 +948,7 @@ public class RangerBasePlugin {
 			accessRequest.setSessionId(request.getSessionId());
 
 			// call isAccessAllowed() to determine if audit is enabled or not
-			RangerAccessResult accessResult = isAccessAllowed(accessRequest, null, "");
+			RangerAccessResult accessResult = isAccessAllowed(accessRequest, null);
 
 			if(accessResult != null && accessResult.getIsAudited()) {
 				accessRequest.setAccessType(action);

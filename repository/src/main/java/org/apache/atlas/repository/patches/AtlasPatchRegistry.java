@@ -41,7 +41,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static org.apache.atlas.model.patches.AtlasPatch.PatchStatus.FAILED;
 import static org.apache.atlas.model.patches.AtlasPatch.PatchStatus.UNKNOWN;
@@ -67,9 +66,9 @@ public class AtlasPatchRegistry {
 
         LOG.info("AtlasPatchRegistry: found {} patches", patchNameStatusMap.size());
 
-//        for (Map.Entry<String, PatchStatus> entry : patchNameStatusMap.entrySet()) {
-//            LOG.info("AtlasPatchRegistry: patchId={}, status={}", entry.getKey(), entry.getValue());
-//        }
+        for (Map.Entry<String, PatchStatus> entry : patchNameStatusMap.entrySet()) {
+            LOG.info("AtlasPatchRegistry: patchId={}, status={}", entry.getKey(), entry.getValue());
+        }
     }
 
     public boolean isApplicable(String incomingId, String patchFile, int index) {
@@ -147,12 +146,13 @@ public class AtlasPatchRegistry {
             setEncodedProperty(patchVertex, MODIFIED_BY_KEY, AtlasTypeDefGraphStoreV2.getCurrentUser());
         } finally {
             graph.commit();
+
             patchNameStatusMap.put(patchId, patchStatus);
         }
     }
 
     private static Map<String, PatchStatus> getPatchNameStatusForAllRegistered(AtlasGraph graph) {
-        Map<String, PatchStatus> ret     = new ConcurrentHashMap<>();
+        Map<String, PatchStatus> ret     = new HashMap<>();
         AtlasPatches             patches = getAllPatches(graph);
 
         for (AtlasPatch patch : patches.getPatches()) {

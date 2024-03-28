@@ -18,7 +18,6 @@ public class SearchParams {
     boolean suppressLogs;
     boolean excludeMeanings;
     boolean excludeClassifications;
-    boolean useAccessControlv2;
 
     RequestMetadata requestMetadata = new RequestMetadata();
     boolean showHighlights;
@@ -27,16 +26,8 @@ public class SearchParams {
         return getQuery();
     }
 
-    public boolean getUseAccessControlv2() {
-        return useAccessControlv2;
-    }
-
     public Set<String> getAttributes() {
         return attributes;
-    }
-
-    public void setQuery(String query) {
-        setQuery(query);
     }
 
     public void setAttributes(Set<String> attributes) {
@@ -131,30 +122,10 @@ public class SearchParams {
         return showHighlights;
     }
 
-    public boolean isAsync() {
-        return this.requestMetadata.async;
-    }
-
-    public Long getAsyncRequestTimeoutInSecs() {
-        return this.requestMetadata.asyncRequestTimeoutInSecs;
-    }
-
-    public String getAsyncSearchContextId() {
-        return this.requestMetadata.asyncSearchContextId;
-    }
-
-    @JsonIgnoreProperties(ignoreUnknown=true)
     static class RequestMetadata {
         private String searchInput;
         private Set<String> utmTags;
         private boolean saveSearchLog;
-
-        private boolean async;
-
-        private Long asyncRequestTimeoutInSecs;
-
-        private String asyncSearchContextId;
-
 
         public String getSearchInput() {
             return searchInput;
@@ -178,18 +149,6 @@ public class SearchParams {
 
         public void setSaveSearchLog(boolean saveSearchLog) {
             this.saveSearchLog = saveSearchLog;
-        }
-
-        public boolean isAsync() {
-            return async;
-        }
-
-        public Long getAsyncRequestTimeoutInSecs() {
-            return asyncRequestTimeoutInSecs;
-        }
-
-        public String getAsyncSearchContextId() {
-            return asyncSearchContextId;
         }
     }
 

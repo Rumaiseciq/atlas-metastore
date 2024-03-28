@@ -97,6 +97,7 @@ public class RequestContext {
     private boolean skipAuthorizationCheck = false;
     private Set<String> deletedEdgesIdsForResetHasLineage = new HashSet<>(0);
     private String requestUri;
+    private boolean cacheEnabled;
 
     private boolean delayTagNotifications = false;
     private Map<AtlasClassification, Collection<Object>> deletedClassificationAndVertices = new HashMap<>();
@@ -708,6 +709,14 @@ public class RequestContext {
 
     public String getRequestUri() {
         return this.requestUri;
+    }
+
+    public void setEnableCache(boolean cacheEnabled) {
+        this.cacheEnabled = cacheEnabled;
+    }
+
+    public boolean isCacheEnabled() {
+        return this.cacheEnabled;
     }
 
     public class EntityGuidPair {
